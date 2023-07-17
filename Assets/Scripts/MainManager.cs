@@ -12,6 +12,7 @@ public class MainManager : MonoBehaviour
 
     public Text ScoreText;
     public GameObject GameOverText;
+    public MenuUIHandler menuUIHandler;
     
     private bool m_Started = false;
     private int m_Points;
@@ -22,6 +23,8 @@ public class MainManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        menuUIHandler = GameObject.Find("Canvas").GetComponent<MenuUIHandler>();
+        DisplayScore();
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -36,6 +39,7 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+        menuUIHandler.DisplayHighScore();
     }
 
     private void Update()
@@ -65,12 +69,24 @@ public class MainManager : MonoBehaviour
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        DisplayScore();
     }
 
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        if (m_Points > MenuManager.instance.highestScore)
+        {
+            MenuManager.instance.highestScore = m_Points;
+            MenuManager.instance.highestScoringPlayer = MenuManager.instance.playerName;
+        }
+        menuUIHandler.DisplayHighScore();
+        MenuManager.instance.SaveHighScore();
+    }
+    
+    private void DisplayScore()
+    {
+        ScoreText.text = $"{MenuManager.instance.playerName} : {m_Points}";
     }
 }
